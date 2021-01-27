@@ -24,9 +24,9 @@ class MyHomePage extends StatefulWidget with WidgetsBindingObserver {
 class _MyHomePageState extends State<MyHomePage> {
   final _documents = [
     {
-      'name': 'Learning Android Studio',
+      'name': 'Contenido 1',
       'link':
-          'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf'
+          'https://wd.brainb.mx/saml/SSO/assets/cursos-resources/curso-contenidos-970/1603421163664-belmont-abril-2019.pdf'
     },
     {
       'name': 'Android Programming Cookbook',
