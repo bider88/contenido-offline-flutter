@@ -2,84 +2,57 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:content_offline/bloc/course_bloc.dart';
+import 'package:content_offline/bloc/course_event.dart';
+import 'package:content_offline/bloc/course_state.dart';
+import 'package:content_offline/managers/course_manager.dart';
+import 'package:content_offline/models/course_detail.dart';
 import 'package:content_offline/models/item_holder.dart';
 import 'package:content_offline/models/taks_info.dart';
+import 'package:content_offline/pages/content_downloaded_page.dart';
 import 'package:content_offline/widgets/download_item_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class MyHomePage extends StatefulWidget with WidgetsBindingObserver {
+class MyHomePage extends StatelessWidget {
+  final String title;
   final TargetPlatform platform;
 
-  MyHomePage({Key key, this.title, this.platform}) : super(key: key);
-
-  final String title;
+  const MyHomePage({Key key, @required this.title, this.platform}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider<CourseBloc>(
+      create: (context) {
+        return CourseBloc(
+          courseManager: CourseManager()
+        );
+      },
+      child: MyHomePageWindow(
+        title: title,
+      ),
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final _documents = [
-    {
-      'name': 'Learning Android Studio',
-      'link':
-          'http://barbra-coco.dyndns.org/student/learning_android_studio.pdf'
-    },
-    {
-      'name': 'Android Programming Cookbook',
-      'link':
-          'http://enos.itcollege.ee/~jpoial/allalaadimised/reading/Android-Programming-Cookbook.pdf'
-    },
-    {
-      'name': 'iOS Programming Guide',
-      'link':
-          'http://darwinlogic.com/uploads/education/iOS_Programming_Guide.pdf'
-    },
-    {
-      'name': 'Objective-C Programming (Pre-Course Workbook',
-      'link':
-          'https://www.bignerdranch.com/documents/objective-c-prereading-assignment.pdf'
-    },
-  ];
+class MyHomePageWindow extends StatefulWidget with WidgetsBindingObserver {
+  final TargetPlatform platform;
+  final String title;
 
-  final _images = [
-    {
-      'name': 'Arches National Park',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/6/60/The_Organ_at_Arches_National_Park_Utah_Corrected.jpg'
-    },
-    {
-      'name': 'Canyonlands National Park',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/7/78/Canyonlands_National_Park%E2%80%A6Needles_area_%286294480744%29.jpg'
-    },
-    {
-      'name': 'Death Valley National Park',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/b/b2/Sand_Dunes_in_Death_Valley_National_Park.jpg'
-    },
-    {
-      'name': 'Gates of the Arctic National Park and Preserve',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/e/e4/GatesofArctic.jpg'
-    }
-  ];
+  MyHomePageWindow({Key key, this.title, this.platform}) : super(key: key);
 
-  final _videos = [
-    {
-      'name': 'Big Buck Bunny',
-      'link':
-          'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-    },
-    {
-      'name': 'Elephant Dream',
-      'link':
-          'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
-    }
-  ];
+
+  @override
+  _MyHomePageStateWindow createState() => new _MyHomePageStateWindow();
+}
+
+class _MyHomePageStateWindow extends State<MyHomePageWindow> {
+
+  bool _courseFetched = false;
+  Course _course;
 
   List<TaskInfo> _tasks;
   List<ItemHolder> _items;
@@ -98,8 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _isLoading = true;
     _permissionReady = false;
-
-    _prepare();
+    _course = Course();
   }
 
   @override
@@ -144,9 +116,23 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+
+    Widget body = Scaffold(
       appBar: new AppBar(
         title: new Text(widget.title),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(
+          Icons.cloud_download
+        ),
+        onPressed: () {
+          Route route = MaterialPageRoute(
+            builder: (_) => ContentDownloadedPage(
+              title: 'Contenido offline',
+            ),
+          );
+          Navigator.push(context, route);
+        },
       ),
       body: Builder(
           builder: (context) => _isLoading
@@ -156,6 +142,32 @@ class _MyHomePageState extends State<MyHomePage> {
               : _permissionReady
                   ? _buildDownloadList()
                   : _buildNoPermissionWarning()),
+    );
+
+    if (!_courseFetched) {
+      BlocProvider.of<CourseBloc>(context).add(CourseInitial(
+        idCurso: 970,
+        idAsociado: 10041
+      ));
+      _courseFetched = true;
+    }
+
+    return BlocListener<CourseBloc, CourseState>(
+      listener: (context, state) {
+        if (state is CourseFetched) {
+          setState(() {
+            _course = state.course;
+            _isLoading = false;
+            _prepare();
+          });
+        }
+
+        if (state is CourseLoading) {
+          _isLoading = true;
+          setState(() {});
+        }
+      },
+      child: body,
     );
   }
 
@@ -301,28 +313,10 @@ class _MyHomePageState extends State<MyHomePage> {
     _tasks = [];
     _items = [];
 
-    _tasks.addAll(_documents.map((document) =>
-        TaskInfo(name: document['name'], link: document['link'])));
+    _tasks.addAll(_course.contenidos.map((contenido) =>
+        TaskInfo(name: contenido.nombre, link: contenido.getContentUrl())));
 
-    _items.add(ItemHolder(name: 'Documents'));
-    for (int i = count; i < _tasks.length; i++) {
-      _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
-      count++;
-    }
-
-    _tasks.addAll(_images
-        .map((image) => TaskInfo(name: image['name'], link: image['link'])));
-
-    _items.add(ItemHolder(name: 'Images'));
-    for (int i = count; i < _tasks.length; i++) {
-      _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
-      count++;
-    }
-
-    _tasks.addAll(_videos
-        .map((video) => TaskInfo(name: video['name'], link: video['link'])));
-
-    _items.add(ItemHolder(name: 'Videos'));
+    _items.add(ItemHolder(name: _course.nombre));
     for (int i = count; i < _tasks.length; i++) {
       _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
       count++;
