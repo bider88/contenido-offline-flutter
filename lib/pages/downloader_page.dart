@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:content_offline/models/course_detail.dart';
 import 'package:content_offline/models/item_holder.dart';
 import 'package:content_offline/models/taks_info.dart';
 import 'package:content_offline/widgets/download_item_widget.dart';
@@ -10,77 +11,19 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class MyHomePage extends StatefulWidget with WidgetsBindingObserver {
+class DownloaderPage extends StatefulWidget with WidgetsBindingObserver {
   final TargetPlatform platform;
+  final Course course;
 
-  MyHomePage({Key key, this.title, this.platform}) : super(key: key);
+  DownloaderPage({Key key, this.platform, this.course}) : super(key: key);
 
-  final String title;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _DownloaderPageState createState() => new _DownloaderPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final _documents = [
-    {
-      'name': 'Contenido 1',
-      'link':
-          'https://wd.brainb.mx/saml/SSO/assets/cursos-resources/curso-contenidos-970/1603421163664-belmont-abril-2019.pdf'
-    },
-    {
-      'name': 'Android Programming Cookbook',
-      'link':
-          'http://enos.itcollege.ee/~jpoial/allalaadimised/reading/Android-Programming-Cookbook.pdf'
-    },
-    {
-      'name': 'iOS Programming Guide',
-      'link':
-          'http://darwinlogic.com/uploads/education/iOS_Programming_Guide.pdf'
-    },
-    {
-      'name': 'Objective-C Programming (Pre-Course Workbook',
-      'link':
-          'https://www.bignerdranch.com/documents/objective-c-prereading-assignment.pdf'
-    },
-  ];
-
-  final _images = [
-    {
-      'name': 'Arches National Park',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/6/60/The_Organ_at_Arches_National_Park_Utah_Corrected.jpg'
-    },
-    {
-      'name': 'Canyonlands National Park',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/7/78/Canyonlands_National_Park%E2%80%A6Needles_area_%286294480744%29.jpg'
-    },
-    {
-      'name': 'Death Valley National Park',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/b/b2/Sand_Dunes_in_Death_Valley_National_Park.jpg'
-    },
-    {
-      'name': 'Gates of the Arctic National Park and Preserve',
-      'link':
-          'https://upload.wikimedia.org/wikipedia/commons/e/e4/GatesofArctic.jpg'
-    }
-  ];
-
-  final _videos = [
-    {
-      'name': 'Big Buck Bunny',
-      'link':
-          'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-    },
-    {
-      'name': 'Elephant Dream',
-      'link':
-          'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4'
-    }
-  ];
-
+class _DownloaderPageState extends State<DownloaderPage> {
+  Course _course;
   List<TaskInfo> _tasks;
   List<ItemHolder> _items;
   bool _isLoading;
@@ -96,6 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     FlutterDownloader.registerCallback(downloadCallback);
 
+    _course = widget.course;
     _isLoading = true;
     _permissionReady = false;
 
@@ -144,19 +88,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(widget.title),
-      ),
-      body: Builder(
-          builder: (context) => _isLoading
-              ? new Center(
-                  child: new CircularProgressIndicator(),
-                )
-              : _permissionReady
-                  ? _buildDownloadList()
-                  : _buildNoPermissionWarning()),
-    );
+    return Container(
+      child: _isLoading ?
+      Center(
+        child: CircularProgressIndicator(),
+      ) :
+      _permissionReady ? _buildDownloadList() : _buildNoPermissionWarning());
   }
 
   Widget _buildDownloadList() => Container(
@@ -301,28 +238,10 @@ class _MyHomePageState extends State<MyHomePage> {
     _tasks = [];
     _items = [];
 
-    _tasks.addAll(_documents.map((document) =>
-        TaskInfo(name: document['name'], link: document['link'])));
+    _tasks.addAll(_course.contenidos.map((contenido) =>
+        TaskInfo(name: contenido.nombre, link: contenido.getContentUrl())));
 
-    _items.add(ItemHolder(name: 'Documents'));
-    for (int i = count; i < _tasks.length; i++) {
-      _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
-      count++;
-    }
-
-    _tasks.addAll(_images
-        .map((image) => TaskInfo(name: image['name'], link: image['link'])));
-
-    _items.add(ItemHolder(name: 'Images'));
-    for (int i = count; i < _tasks.length; i++) {
-      _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
-      count++;
-    }
-
-    _tasks.addAll(_videos
-        .map((video) => TaskInfo(name: video['name'], link: video['link'])));
-
-    _items.add(ItemHolder(name: 'Videos'));
+    _items.add(ItemHolder(name: _course.nombre));
     for (int i = count; i < _tasks.length; i++) {
       _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
       count++;
