@@ -123,6 +123,13 @@ class _DownloaderPageState extends State<DownloaderPage> {
                           _delete(task);
                         } else if (task.status == DownloadTaskStatus.failed) {
                           _retryDownload(task);
+                        } else if (task.status == DownloadTaskStatus.canceled) {
+                          _requestDownload(task);
+                        }
+                      },
+                      onCancelClick: (task) {
+                        if (task.status == DownloadTaskStatus.running) {
+                          _cancelDownload(task);
                         }
                       },
                     ))
@@ -238,14 +245,25 @@ class _DownloaderPageState extends State<DownloaderPage> {
     _tasks = [];
     _items = [];
 
-    _tasks.addAll(_course.contenidos.map((contenido) =>
-        TaskInfo(name: contenido.nombre, link: contenido.getContentUrl())));
+    _course.contenidos.forEach((contenido) {
+      if (
+        contenido.tipo == 'Video' ||
+        contenido.tipo == 'Pdf' ||
+        contenido.tipo == 'Imágen'
+      ) {
+        _tasks.add(
+          new TaskInfo(name: contenido.nombre, link: contenido.getContentUrl())
+        );
 
-    _items.add(ItemHolder(name: _course.nombre));
-    for (int i = count; i < _tasks.length; i++) {
-      _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
-      count++;
-    }
+        _items.add(ItemHolder(name: _course.nombre));
+
+        for (int i = count; i < _tasks.length; i++) {
+          _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
+          count++;
+        }
+      }
+    });
+
 
     tasks?.forEach((task) {
       for (TaskInfo info in _tasks) {

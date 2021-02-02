@@ -7,8 +7,9 @@ class DownloadItemWidgetWidget extends StatelessWidget {
   final ItemHolder data;
   final Function(TaskInfo) onItemClick;
   final Function(TaskInfo) onAtionClick;
+  final Function(TaskInfo) onCancelClick;
 
-  DownloadItemWidgetWidget({this.data, this.onItemClick, this.onAtionClick});
+  DownloadItemWidgetWidget({this.data, this.onItemClick, this.onAtionClick, this.onCancelClick});
 
   @override
   Widget build(BuildContext context) {
@@ -71,17 +72,45 @@ class DownloadItemWidgetWidget extends StatelessWidget {
         constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
       );
     } else if (task.status == DownloadTaskStatus.running) {
-      return RawMaterialButton(
-        onPressed: () {
-          onAtionClick(task);
-        },
-        child: Icon(
-          Icons.pause,
-          color: Colors.red,
-        ),
-        shape: CircleBorder(),
-        constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          RawMaterialButton(
+            onPressed: () {
+              onAtionClick(task);
+            },
+            child: Icon(
+              Icons.pause,
+              color: Colors.blue,
+            ),
+            shape: CircleBorder(),
+            constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+          ),
+          RawMaterialButton(
+            onPressed: () {
+              onCancelClick(task);
+            },
+            child: Icon(
+              Icons.close,
+              color: Colors.red,
+            ),
+            shape: CircleBorder(),
+            constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+          )
+        ],
       );
+      // return RawMaterialButton(
+      //   onPressed: () {
+      //     onAtionClick(task);
+      //   },
+      //   child: Icon(
+      //     Icons.pause,
+      //     color: Colors.red,
+      //   ),
+      //   shape: CircleBorder(),
+      //   constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+      // );
     } else if (task.status == DownloadTaskStatus.paused) {
       return RawMaterialButton(
         onPressed: () {
@@ -100,7 +129,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
-            'Ready',
+            'Listo',
             style: TextStyle(color: Colors.green),
           ),
           RawMaterialButton(
@@ -117,7 +146,14 @@ class DownloadItemWidgetWidget extends StatelessWidget {
         ],
       );
     } else if (task.status == DownloadTaskStatus.canceled) {
-      return Text('Canceled', style: TextStyle(color: Colors.red));
+      return RawMaterialButton(
+        onPressed: () {
+          onAtionClick(task);
+        },
+        child: Icon(Icons.file_download),
+        shape: CircleBorder(),
+        constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
+      );
     } else if (task.status == DownloadTaskStatus.failed) {
       return Row(
         mainAxisSize: MainAxisSize.min,
