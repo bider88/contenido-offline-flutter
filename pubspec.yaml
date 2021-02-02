@@ -29,6 +29,7 @@ dependencies:
   equatable: ^1.2.5
   flutter_bloc: ^6.1.1
   http: ^0.12.2
+  sqflite:
 
 
   # The following adds the Cupertino Icons font to your application.

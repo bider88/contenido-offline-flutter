@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 
+import 'package:content_offline/helpers/database_helper.dart';
 import 'package:content_offline/models/course_detail.dart';
 import 'package:content_offline/models/item_holder.dart';
 import 'package:content_offline/models/taks_info.dart';
@@ -23,6 +24,8 @@ class DownloaderPage extends StatefulWidget with WidgetsBindingObserver {
 }
 
 class _DownloaderPageState extends State<DownloaderPage> {
+  final dbHelper = DatabaseHelper.instance;
+  
   Course _course;
   List<TaskInfo> _tasks;
   List<ItemHolder> _items;
@@ -132,6 +135,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
                           _cancelDownload(task);
                         }
                       },
+                      deleteContentInDb: _deleteContent,
                     ))
               .toList(),
         ),
@@ -190,10 +194,12 @@ class _DownloaderPageState extends State<DownloaderPage> {
         savedDir: _localPath,
         showNotification: true,
         openFileFromNotification: true);
+    await _saveContent(task);
   }
 
   void _cancelDownload(TaskInfo task) async {
     await FlutterDownloader.cancel(taskId: task.taskId);
+    await _deleteContent(task);
   }
 
   void _pauseDownload(TaskInfo task) async {
@@ -219,6 +225,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
         taskId: task.taskId, shouldDeleteContent: true);
     await _prepare();
     setState(() {});
+    await _deleteContent(task);
   }
 
   Future<bool> _checkPermission() async {
@@ -252,7 +259,13 @@ class _DownloaderPageState extends State<DownloaderPage> {
         contenido.tipo == 'Imágen'
       ) {
         _tasks.add(
-          new TaskInfo(name: contenido.nombre, link: contenido.getContentUrl())
+          new TaskInfo(
+            name: contenido.nombre,
+            courseName: widget.course.nombre,
+            link: contenido.getContentUrl(),
+            contentId: contenido.id,
+            courseId: widget.course.id
+          )
         );
 
         _items.add(ItemHolder(name: _course.nombre));
@@ -296,4 +309,38 @@ class _DownloaderPageState extends State<DownloaderPage> {
         : await getApplicationDocumentsDirectory();
     return directory.path;
   }
+
+  // DB queries
+
+  Future<void> _saveContent(TaskInfo task) async {
+
+    List<Map<String, dynamic>> content = 
+      await dbHelper.queryFindByContentId(task.contentId);
+    
+    List<Map<String, dynamic>> listCourses = 
+      await dbHelper.queryAllRows();
+
+    print('table course list:::::::::::::::::::::::::');
+    print(listCourses);
+    if (content.length == 0) {
+      Map<String, dynamic> row = {
+        DatabaseHelper.columnName           : task.name,
+        DatabaseHelper.columnCourseName     : task.courseName,
+        DatabaseHelper.columnContentId      : task.contentId,
+        DatabaseHelper.columnLink           : task.link,
+        DatabaseHelper.columnCourseId       : task.courseId,
+      };
+      final id = await dbHelper.insert(row);
+      print('inserted row id: $id');
+    }
+  }
+  
+  Future<void> _deleteContent(TaskInfo task) async {
+
+    int deletedRows = 
+      await dbHelper.deleteByContentId(task.contentId);
+
+    print('deleted rows $deletedRows::::::::::::::::::::::::: content id: ${task.contentId} ');
+  }
+
 }

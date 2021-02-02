@@ -8,8 +8,17 @@ class DownloadItemWidgetWidget extends StatelessWidget {
   final Function(TaskInfo) onItemClick;
   final Function(TaskInfo) onAtionClick;
   final Function(TaskInfo) onCancelClick;
+  final Function(TaskInfo) deleteContentInDb;
 
-  DownloadItemWidgetWidget({this.data, this.onItemClick, this.onAtionClick, this.onCancelClick});
+  DownloadItemWidgetWidget(
+    {
+      this.data,
+      this.onItemClick,
+      this.onAtionClick,
+      this.onCancelClick,
+      this.deleteContentInDb
+    }
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +164,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
         constraints: BoxConstraints(minHeight: 32.0, minWidth: 32.0),
       );
     } else if (task.status == DownloadTaskStatus.failed) {
+      deleteContentInDb(task);
       return Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.end,

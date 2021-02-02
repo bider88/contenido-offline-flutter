@@ -3,7 +3,7 @@ import 'package:content_offline/bloc/course_event.dart';
 import 'package:content_offline/bloc/course_state.dart';
 import 'package:content_offline/managers/course_manager.dart';
 import 'package:content_offline/models/course_detail.dart';
-import 'package:content_offline/pages/content_downloaded_page.dart';
+import 'package:content_offline/pages/course_downloaded_page.dart';
 import 'package:content_offline/pages/downloader_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -75,7 +75,7 @@ class _MyHomePageStateWindow extends State<HomePageWindow> {
         ),
         onPressed: () {
           Route route = MaterialPageRoute(
-            builder: (_) => ContentDownloadedPage(
+            builder: (_) => CourseDownloadedPage(
               title: 'Contenido offline',
             ),
           );
@@ -95,7 +95,7 @@ class _MyHomePageStateWindow extends State<HomePageWindow> {
 
     if (!_courseFetched) {
       BlocProvider.of<CourseBloc>(context).add(CourseInitial(
-        idCurso: 970,
+        idCurso: 541,
         idAsociado: 10041
       ));
       _courseFetched = true;
