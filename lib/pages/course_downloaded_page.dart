@@ -25,7 +25,7 @@ class _CourseDownloadedPageState extends State<CourseDownloadedPage> {
   }
 
   void _getContents() async {
-    _items = await dbHelper.queryAllRows();
+    _items = await dbHelper.queryAllCoursesGrouped();
     setState(() {
       _loading = false;
     });

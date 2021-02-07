@@ -70,6 +70,11 @@ class DatabaseHelper {
     return await db.query(table);
   }
   
+  Future<List<Map<String, dynamic>>> queryAllCoursesGrouped() async {
+    Database db = await instance.database;
+    return await db.query(table, groupBy: '$columnCourseId');
+  }
+  
   Future<List<Map<String, dynamic>>> queryFindByContentId(int contentId) async {
     Database db = await instance.database;
     return await db.query(
