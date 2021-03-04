@@ -21,10 +21,10 @@ class _CourseDownloadedPageState extends State<CourseDownloadedPage> {
   @override
   void initState() { 
     super.initState();
-    _getContents();
+    _getCourses();
   }
 
-  void _getContents() async {
+  void _getCourses() async {
     _items = await dbHelper.queryAllCoursesGrouped();
     setState(() {
       _loading = false;
@@ -64,7 +64,9 @@ class _CourseDownloadedPageState extends State<CourseDownloadedPage> {
           trailing: Icon(Icons.keyboard_arrow_right, color: Colors.blue),
           onTap: () {
             final route = MaterialPageRoute(
-              builder: (ontext) => ContentDownloadedPage()
+              builder: (context) => ContentDownloadedPage(
+                item: content
+              )
             );
             Navigator.push(context, route);
           },

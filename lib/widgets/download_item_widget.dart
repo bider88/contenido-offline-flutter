@@ -6,7 +6,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 class DownloadItemWidgetWidget extends StatelessWidget {
   final ItemHolder data;
   final Function(TaskInfo) onItemClick;
-  final Function(TaskInfo) onAtionClick;
+  final Function(TaskInfo) onActionClick;
   final Function(TaskInfo) onCancelClick;
   final Function(TaskInfo) deleteContentInDb;
 
@@ -14,7 +14,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
     {
       this.data,
       this.onItemClick,
-      this.onAtionClick,
+      this.onActionClick,
       this.onCancelClick,
       this.deleteContentInDb
     }
@@ -74,7 +74,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
     if (task.status == DownloadTaskStatus.undefined) {
       return RawMaterialButton(
         onPressed: () {
-          onAtionClick(task);
+          onActionClick(task);
         },
         child: Icon(Icons.file_download),
         shape: CircleBorder(),
@@ -87,7 +87,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
         children: [
           RawMaterialButton(
             onPressed: () {
-              onAtionClick(task);
+              onActionClick(task);
             },
             child: Icon(
               Icons.pause,
@@ -111,7 +111,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
       );
       // return RawMaterialButton(
       //   onPressed: () {
-      //     onAtionClick(task);
+      //     onActionClick(task);
       //   },
       //   child: Icon(
       //     Icons.pause,
@@ -123,7 +123,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
     } else if (task.status == DownloadTaskStatus.paused) {
       return RawMaterialButton(
         onPressed: () {
-          onAtionClick(task);
+          onActionClick(task);
         },
         child: Icon(
           Icons.play_arrow,
@@ -143,7 +143,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
           ),
           RawMaterialButton(
             onPressed: () {
-              onAtionClick(task);
+              onActionClick(task);
             },
             child: Icon(
               Icons.delete_forever,
@@ -157,7 +157,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
     } else if (task.status == DownloadTaskStatus.canceled) {
       return RawMaterialButton(
         onPressed: () {
-          onAtionClick(task);
+          onActionClick(task);
         },
         child: Icon(Icons.file_download),
         shape: CircleBorder(),
@@ -172,7 +172,7 @@ class DownloadItemWidgetWidget extends StatelessWidget {
           Text('Failed', style: TextStyle(color: Colors.red)),
           RawMaterialButton(
             onPressed: () {
-              onAtionClick(task);
+              onActionClick(task);
             },
             child: Icon(
               Icons.refresh,

@@ -115,7 +115,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
                           }
                         });
                       },
-                      onAtionClick: (task) {
+                      onActionClick: (task) {
                         if (task.status == DownloadTaskStatus.undefined) {
                           _requestDownload(task);
                         } else if (task.status == DownloadTaskStatus.running) {
@@ -124,9 +124,11 @@ class _DownloaderPageState extends State<DownloaderPage> {
                           _resumeDownload(task);
                         } else if (task.status == DownloadTaskStatus.complete) {
                           _delete(task);
+                          _deleteContent(task);
                         } else if (task.status == DownloadTaskStatus.failed) {
                           _retryDownload(task);
                         } else if (task.status == DownloadTaskStatus.canceled) {
+                          _deleteContent(task);
                           _requestDownload(task);
                         }
                       },
@@ -212,8 +214,10 @@ class _DownloaderPageState extends State<DownloaderPage> {
   }
 
   void _retryDownload(TaskInfo task) async {
+    await _deleteContent(task);
     String newTaskId = await FlutterDownloader.retry(taskId: task.taskId);
     task.taskId = newTaskId;
+    await _saveContent(task);
   }
 
   Future<bool> _openDownloadedFile(TaskInfo task) {
@@ -252,6 +256,8 @@ class _DownloaderPageState extends State<DownloaderPage> {
     _tasks = [];
     _items = [];
 
+    _items.add(ItemHolder(name: _course.nombre));
+
     _course.contenidos.forEach((contenido) {
       if (
         contenido.tipo == 'Video' ||
@@ -267,16 +273,13 @@ class _DownloaderPageState extends State<DownloaderPage> {
             courseId: widget.course.id
           )
         );
-
-        _items.add(ItemHolder(name: _course.nombre));
-
-        for (int i = count; i < _tasks.length; i++) {
-          _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
-          count++;
-        }
       }
     });
 
+    for (int i = count; i < _tasks.length; i++) {
+      _items.add(ItemHolder(name: _tasks[i].name, task: _tasks[i]));
+      count++;
+    }
 
     tasks?.forEach((task) {
       for (TaskInfo info in _tasks) {
@@ -320,7 +323,6 @@ class _DownloaderPageState extends State<DownloaderPage> {
     List<Map<String, dynamic>> listCourses = 
       await dbHelper.queryAllRows();
 
-    print('table course list:::::::::::::::::::::::::');
     print(listCourses);
     if (content.length == 0) {
       Map<String, dynamic> row = {
