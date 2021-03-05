@@ -95,7 +95,7 @@ class _MyHomePageStateWindow extends State<HomePageWindow> {
 
     if (!_courseFetched) {
       BlocProvider.of<CourseBloc>(context).add(CourseInitial(
-        idCurso: 11196, // 1070   11196
+        idCurso: 1099, // 1070   11196   1099
         idAsociado: 10041
       ));
       _courseFetched = true;
